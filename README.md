@@ -1,222 +1,320 @@
-# 🚀 Enterprise Knowledge Intelligence Platform (EKIP)
+# EKIP — Enterprise Knowledge Intelligence Platform
 
-> **Enterprise-Grade AI-Powered Knowledge Discovery & Intelligence System**
+EKIP is a full-stack, AI-powered Enterprise Knowledge Intelligence Platform that combines secure document management, role-based access control, semantic search, analytics, auditability, and Retrieval-Augmented Generation (RAG) to deliver grounded, source-cited answers from authorized organizational knowledge.
 
-EKIP is an enterprise-grade AI-powered knowledge management platform that transforms scattered organizational documents into an intelligent, searchable, and secure knowledge ecosystem. Built using a Hybrid Retrieval-Augmented Generation (RAG) architecture, EKIP enables employees to retrieve accurate, citation-backed answers from thousands of private documents in seconds.
+The application is designed around three organizational roles — **Employee**, **Manager**, and **Admin** — with access rules enforced across the frontend and backend.
 
-The platform combines Semantic Search, Hybrid Retrieval, Role-Based Access Control (RBAC), Enterprise Analytics, Audit Logging, and AI Monitoring to deliver a scalable solution for organizational knowledge discovery and decision-making.
+## Core Capabilities
 
----
+- Secure authentication with Supabase Auth
+- Role-based access control for Employee, Manager, and Admin workflows
+- Department-aware document access
+- Private document storage with Supabase Storage
+- Document ingestion and text extraction
+- Vector embeddings and semantic retrieval
+- Retrieval-augmented chat with grounded source citations
+- Persistent chat conversations and history
+- Knowledge Base search
+- Admin user and department management
+- Audit logging
+- Role-aware analytics
+- Production health and readiness checks
+- Responsive layouts for desktop, laptop, 1024px, and 768px views
 
-## 🌟 Key Features
-
-### 🤖 AI Knowledge Assistant
-- Natural language querying across enterprise documents
-- Citation-backed AI responses
-- Multi-document reasoning
-- Context-aware conversations
-- Conversation history management
-
-### 🔍 Hybrid RAG Search
-- BM25 Keyword Search
-- Dense Vector Retrieval
-- Hybrid Search Pipeline
-- Cross-Encoder Re-ranking
-- Semantic Search Optimization
-
-### 📄 Document Intelligence
-- PDF, DOCX, PPTX Upload Support
-- Automated Document Chunking
-- Metadata Extraction
-- Embedding Generation
-- Intelligent Document Indexing
-
-### 👥 Role-Based Access Control (RBAC)
-- Employee Dashboard
-- Manager Dashboard
-- Admin Dashboard
-- Department-Level Permissions
-- User & Role Management
-
-### 📊 Enterprise Analytics
-- Search Trend Analysis
-- User Activity Monitoring
-- Department Insights
-- Knowledge Consumption Metrics
-
-### 🛡️ Security & Compliance
-- Authentication & Authorization
-- Audit Logging
-- Secure Document Access
-- Compliance Monitoring
-
-### ⚙️ AI Monitoring
-- Token Usage Tracking
-- Response Latency Monitoring
-- Retrieval Accuracy Analysis
-- Query Success Rate Monitoring
-
----
-
-## 🏗️ System Architecture
-
-```text
-Document Upload
-       │
-       ▼
-Document Processing
-       │
-       ▼
-Text Chunking
-       │
-       ▼
-Embedding Generation
-       │
-       ▼
-Vector Database (Milvus)
-       │
-       ▼
-Hybrid Retrieval
-(BM25 + Vector Search)
-       │
-       ▼
-Cross-Encoder Re-ranking
-       │
-       ▼
-LLM (Llama 3 / Mistral)
-       │
-       ▼
-Citation-Based Response
-```
-
----
-
-## 👨‍💼 User Roles
+## Roles
 
 ### Employee
-- AI Chat
-- Knowledge Base
-- Document Search
-- Citation-Based Answers
-- Profile & Settings
+
+Employees can access authorized organizational knowledge, search the Knowledge Base, use the grounded chat experience, and manage their own profile and settings.
 
 ### Manager
-- Department Analytics
-- Team Activity Monitoring
-- Document Upload & Management
-- Knowledge Insights
+
+Managers receive Employee capabilities plus department-scoped management access. Manager document operations and analytics are limited to their authorized department scope.
 
 ### Admin
-- User Management
-- Document Governance
-- Analytics Dashboard
-- Audit Logs
-- AI Monitoring
-- Platform Configuration
 
----
+Admins have organization-wide administrative access, including user management, department management, document administration, analytics, and audit logs.
 
-## 🧠 AI & RAG Pipeline
+## Architecture
 
-### Retrieval Layer
-- BM25 Sparse Retrieval
-- Dense Vector Retrieval
-- Hybrid Search Fusion
-
-### Ranking Layer
-- Cross-Encoder Re-ranking
-- Relevance Optimization
-
-### Generation Layer
-- Llama 3
-- Mistral
-- Citation-Aware Response Generation
-
-### Knowledge Layer
-- Document Chunking
-- Metadata Filtering
-- Context Assembly
-- Source Traceability
-
----
-
-## 🛠️ Tech Stack
-
-### Frontend
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-- ShadCN UI
-
-### Backend
-- FastAPI
-- Python
-- JWT Authentication
-- RBAC Authorization
-
-### AI & Machine Learning
-- LangChain
-- LlamaIndex
-- Llama 3
-- Mistral
-- Sentence Transformers
-- Cross-Encoders
-
-### Database
-- PostgreSQL
-- Milvus
-- ChromaDB
-
-### DevOps
-- Docker
-- Kubernetes
-- GitHub Actions
-- Nginx
-
----
-
-## 📂 Project Structure
-
-```bash
-EKIP/
-│
-├── frontend/
-├── backend/
-├── ai-engine/
-├── docs/
-├── deployment/
-├── docker/
-└── tests/
+```text
+React + Vite Frontend
+        |
+        v
+Node.js + Express API
+   |        |        |
+   |        |        +--> Ollama
+   |        |             - qwen3:4b
+   |        |             - nomic-embed-text
+   |        |
+   |        +--> Supabase
+   |              - Authentication
+   |              - Private document storage
+   |
+   +--> Neon PostgreSQL
+          - Prisma ORM
+          - Application data
+          - Chat persistence
+          - Audit records
+          - Vector-backed knowledge data
 ```
 
----
+## Technology Stack
 
-## 📈 Future Enhancements
+### Frontend
 
-- Multi-Language Knowledge Search
-- GraphRAG Integration
-- Voice-Based AI Assistant
-- Enterprise SSO (OAuth, SAML)
-- Knowledge Graph Visualization
-- AI-Powered Document Summarization
-- Agentic AI Workflows
+- React 18
+- TypeScript
+- Vite
+- Tailwind CSS
+- React Router
+- Radix UI primitives
+- Material UI
+- Recharts
+- Lucide icons
+- Supabase JavaScript client
 
----
+### Backend
 
-## 🎯 Business Impact
+- Node.js
+- Express 5
+- TypeScript
+- Prisma ORM
+- PostgreSQL / Neon
+- Supabase
+- Helmet
+- CORS
+- Express rate limiting
+- Vitest
 
-EKIP significantly reduces information retrieval time, improves organizational productivity, enhances compliance readiness, and enables employees to make faster, data-driven decisions through secure AI-powered knowledge access.
+### Knowledge and AI Runtime
 
----
+- Ollama
+- `qwen3:4b` for chat generation
+- `nomic-embed-text` for embeddings
+- 768-dimensional embeddings
+- Retrieval-augmented generation
+- Semantic search
 
-## 👨‍💻 Author
+## Repository Structure
 
-**Md Auranzeb Khan**
+```text
+EKIP CURRENT/
+├── src/                       # React frontend
+│   ├── app/
+│   │   ├── components/
+│   │   ├── context/
+│   │   └── pages/
+│   ├── lib/
+│   └── styles/
+├── backend/
+│   ├── prisma/                # Prisma schema and migrations
+│   ├── scripts/               # Backend verification utilities
+│   ├── src/
+│   │   ├── config/
+│   │   ├── middleware/
+│   │   └── modules/
+│   └── tests/
+├── scripts/                   # Project-level verification scripts
+├── DEPLOYMENT.md
+├── package.json
+└── vite.config.ts
+```
 
-Final Year Computer Science Engineering Student  
-AI/ML Enthusiast • Full-Stack Developer • Enterprise AI Systems Builder
+## Local Development
 
----
+### Prerequisites
 
-⭐ If you found this project interesting, consider giving it a star!
+Install:
+
+- Node.js and npm
+- PostgreSQL-compatible Neon database
+- Supabase project
+- Ollama
+
+Pull the required Ollama models:
+
+```bash
+ollama pull nomic-embed-text
+ollama pull qwen3:4b
+```
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Auranzeb05/Enterprise-Knowledge-Intelligence-Platform-EKIP-.git
+cd Enterprise-Knowledge-Intelligence-Platform-EKIP-
+```
+
+### 2. Configure the frontend
+
+```bash
+cp .env.example .env
+npm install
+```
+
+Set the required frontend values in `.env`:
+
+```env
+VITE_SUPABASE_URL=
+VITE_SUPABASE_ANON_KEY=
+VITE_API_URL=http://localhost:4000
+```
+
+### 3. Configure the backend
+
+```bash
+cd backend
+cp .env.example .env
+npm install
+```
+
+Set the required backend values in `backend/.env`.
+
+The important configuration groups are:
+
+- Neon / PostgreSQL
+- Supabase
+- CORS
+- Ollama
+- runtime settings
+
+Never commit real environment files.
+
+### 4. Prepare Prisma
+
+From `backend/`:
+
+```bash
+npx prisma generate
+npx prisma migrate deploy
+```
+
+### 5. Start Ollama
+
+Make sure Ollama is running and the required models are available:
+
+```bash
+ollama list
+```
+
+### 6. Start the backend
+
+```bash
+cd backend
+npm run dev
+```
+
+Backend default:
+
+```text
+http://localhost:4000
+```
+
+### 7. Start the frontend
+
+In another terminal:
+
+```bash
+npm run dev
+```
+
+Frontend default:
+
+```text
+http://localhost:5173
+```
+
+## Production Build
+
+Frontend:
+
+```bash
+npm run build
+```
+
+Backend:
+
+```bash
+cd backend
+npm run build
+npm start
+```
+
+The frontend production output is generated in `dist/`.
+
+The backend production entry point is `backend/dist/server.js`.
+
+## Health and Readiness
+
+Backend liveness:
+
+```text
+GET /api/health
+```
+
+Backend readiness:
+
+```text
+GET /api/ready
+```
+
+Readiness verifies both the PostgreSQL connection and Ollama availability.
+
+## Verification
+
+Backend verification:
+
+```bash
+cd backend
+npm run verify:phase7
+```
+
+Runtime verification with running services:
+
+```bash
+npm run verify:runtime
+```
+
+Project-level deployment verification is available at:
+
+```bash
+./scripts/verify-deployment.sh
+```
+
+## Security
+
+EKIP includes:
+
+- authenticated API access
+- server-side role enforcement
+- department-aware authorization
+- private document storage
+- explicit production CORS allowlisting
+- security headers
+- API rate limiting
+- request IDs and structured error handling
+- service-role credentials restricted to the backend
+- environment validation
+- audit logging
+
+## Deployment
+
+See [`DEPLOYMENT.md`](DEPLOYMENT.md) for the production architecture, environment configuration, Ollama hosting considerations, CORS configuration, health checks, migrations, and deployment smoke-test procedure.
+
+## Current Status
+
+The application includes the complete frontend and backend workflow for:
+
+- authentication
+- role-based dashboards
+- document management
+- knowledge retrieval
+- grounded chat
+- conversation persistence
+- analytics
+- audit logs
+- account profile and settings
+- production readiness
+
+The project is suitable for local demonstration and can be deployed publicly when the backend has secure network access to a persistent Ollama runtime.

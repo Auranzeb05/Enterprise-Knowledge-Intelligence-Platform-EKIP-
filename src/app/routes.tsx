@@ -1,39 +1,459 @@
-import { createBrowserRouter } from "react-router";
-import LoginPage from "./pages/LoginPage";
-import EmployeeDashboard from "./pages/EmployeeDashboard";
-import EmployeeProfile from "./pages/EmployeeProfile";
-import EmployeeSettings from "./pages/EmployeeSettings";
-import AIChatPage from "./pages/AIChatPage";
-import KnowledgeBasePage from "./pages/KnowledgeBasePage";
-import DocumentManagement from "./pages/DocumentManagement";
-import ManagerDashboard from "./pages/ManagerDashboard";
-import ManagerProfile from "./pages/ManagerProfile";
-import ManagerSettings from "./pages/ManagerSettings";
-import AnalyticsDashboard from "./pages/AnalyticsDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
-import AdminProfile from "./pages/AdminProfile";
-import AdminSettings from "./pages/AdminSettings";
-import UserManagement from "./pages/UserManagement";
-import AuditLogs from "./pages/AuditLogs";
-import AIMonitoring from "./pages/AIMonitoring";
+import React, {
+  Suspense,
+  lazy,
+} from "react";
 
-export const router = createBrowserRouter([
-  { path: "/",              Component: LoginPage },
-  { path: "/dashboard",     Component: EmployeeDashboard },
-  { path: "/profile",       Component: EmployeeProfile },
-  { path: "/settings",      Component: EmployeeSettings },
-  { path: "/ai-chat",       Component: AIChatPage },
-  { path: "/knowledge",     Component: KnowledgeBasePage },
-  { path: "/documents",     Component: DocumentManagement },
-  { path: "/manager",       Component: ManagerDashboard },
-  { path: "/manager-profile", Component: ManagerProfile },
-  { path: "/manager-settings", Component: ManagerSettings },
-  { path: "/analytics",     Component: AnalyticsDashboard },
-  { path: "/admin",         Component: AdminDashboard },
-  { path: "/admin-profile", Component: AdminProfile },
-  { path: "/admin-settings",Component: AdminSettings },
-  { path: "/users",         Component: UserManagement },
-  { path: "/audit",         Component: AuditLogs },
-  { path: "/ai-monitoring", Component: AIMonitoring },
-  { path: "*",              Component: LoginPage },
-]);
+import {
+  createBrowserRouter,
+} from "react-router";
+
+import LoginPage from "./pages/LoginPage";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+const EmployeeDashboard =
+  lazy(
+    () =>
+      import(
+        "./pages/EmployeeDashboard"
+      )
+  );
+
+const EmployeeProfile =
+  lazy(
+    () =>
+      import(
+        "./pages/EmployeeProfile"
+      )
+  );
+
+const EmployeeSettings =
+  lazy(
+    () =>
+      import(
+        "./pages/EmployeeSettings"
+      )
+  );
+
+const AIChatPage =
+  lazy(
+    () =>
+      import(
+        "./pages/AIChatPage"
+      )
+  );
+
+const KnowledgeBasePage =
+  lazy(
+    () =>
+      import(
+        "./pages/KnowledgeBasePage"
+      )
+  );
+
+const DocumentManagement =
+  lazy(
+    () =>
+      import(
+        "./pages/DocumentManagement"
+      )
+  );
+
+const ManagerDashboard =
+  lazy(
+    () =>
+      import(
+        "./pages/ManagerDashboard"
+      )
+  );
+
+const ManagerProfile =
+  lazy(
+    () =>
+      import(
+        "./pages/ManagerProfile"
+      )
+  );
+
+const ManagerSettings =
+  lazy(
+    () =>
+      import(
+        "./pages/ManagerSettings"
+      )
+  );
+
+const AnalyticsDashboard =
+  lazy(
+    () =>
+      import(
+        "./pages/AnalyticsDashboard"
+      )
+  );
+
+const AdminDashboard =
+  lazy(
+    () =>
+      import(
+        "./pages/AdminDashboard"
+      )
+  );
+
+const AdminProfile =
+  lazy(
+    () =>
+      import(
+        "./pages/AdminProfile"
+      )
+  );
+
+const AdminSettings =
+  lazy(
+    () =>
+      import(
+        "./pages/AdminSettings"
+      )
+  );
+
+const UserManagement =
+  lazy(
+    () =>
+      import(
+        "./pages/UserManagement"
+      )
+  );
+
+const DepartmentManagement =
+  lazy(
+    () =>
+      import(
+        "./pages/DepartmentManagement"
+      )
+  );
+
+const AuditLogs =
+  lazy(
+    () =>
+      import(
+        "./pages/AuditLogs"
+      )
+  );
+
+function RouteLoading() {
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{
+        background:
+          "#F8FAFC",
+      }}
+    >
+      <div
+        className="text-center"
+      >
+        <div
+          className="w-10 h-10 rounded-full border-4 border-slate-200 border-t-blue-600 animate-spin mx-auto"
+        />
+
+        <p
+          className="mt-4 text-sm font-semibold text-slate-600"
+        >
+          Loading EKIP workspace…
+        </p>
+
+        <p
+          className="mt-1 text-xs text-slate-400"
+        >
+          Preparing your secure workspace
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function withSuspense(
+  element:
+    React.ReactNode
+) {
+  return (
+    <Suspense
+      fallback={
+        <RouteLoading />
+      }
+    >
+      {element}
+    </Suspense>
+  );
+}
+
+function protectedPage(
+  element:
+    React.ReactNode,
+  allowedRoles:
+    Array<
+      | "employee"
+      | "manager"
+      | "admin"
+    >
+) {
+  return (
+    <ProtectedRoute
+      allowedRoles={
+        allowedRoles
+      }
+    >
+      {withSuspense(
+        element
+      )}
+    </ProtectedRoute>
+  );
+}
+
+export const router =
+  createBrowserRouter([
+    {
+      path:
+        "/",
+
+      Component:
+        LoginPage,
+    },
+
+    /*
+     * Employee routes
+     */
+    {
+      path:
+        "/dashboard",
+
+      element:
+        protectedPage(
+          <EmployeeDashboard />,
+          [
+            "employee",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/profile",
+
+      element:
+        protectedPage(
+          <EmployeeProfile />,
+          [
+            "employee",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/settings",
+
+      element:
+        protectedPage(
+          <EmployeeSettings />,
+          [
+            "employee",
+          ]
+        ),
+    },
+
+    /*
+     * Shared knowledge routes
+     */
+    {
+      path:
+        "/knowledge",
+
+      element:
+        protectedPage(
+          <KnowledgeBasePage />,
+          [
+            "employee",
+            "manager",
+            "admin",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/ai-chat",
+
+      element:
+        protectedPage(
+          <AIChatPage />,
+          [
+            "employee",
+            "manager",
+            "admin",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/documents",
+
+      element:
+        protectedPage(
+          <DocumentManagement />,
+          [
+            "employee",
+            "manager",
+            "admin",
+          ]
+        ),
+    },
+
+    /*
+     * Manager routes
+     */
+    {
+      path:
+        "/manager",
+
+      element:
+        protectedPage(
+          <ManagerDashboard />,
+          [
+            "manager",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/manager-profile",
+
+      element:
+        protectedPage(
+          <ManagerProfile />,
+          [
+            "manager",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/manager-settings",
+
+      element:
+        protectedPage(
+          <ManagerSettings />,
+          [
+            "manager",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/analytics",
+
+      element:
+        protectedPage(
+          <AnalyticsDashboard />,
+          [
+            "manager",
+            "admin",
+          ]
+        ),
+    },
+
+    /*
+     * Admin routes
+     */
+    {
+      path:
+        "/admin",
+
+      element:
+        protectedPage(
+          <AdminDashboard />,
+          [
+            "admin",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/admin-profile",
+
+      element:
+        protectedPage(
+          <AdminProfile />,
+          [
+            "admin",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/admin-settings",
+
+      element:
+        protectedPage(
+          <AdminSettings />,
+          [
+            "admin",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/users",
+
+      element:
+        protectedPage(
+          <UserManagement />,
+          [
+            "admin",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/departments",
+
+      element:
+        protectedPage(
+          <DepartmentManagement />,
+          [
+            "admin",
+          ]
+        ),
+    },
+
+    {
+      path:
+        "/audit",
+
+      element:
+        protectedPage(
+          <AuditLogs />,
+          [
+            "admin",
+          ]
+        ),
+    },
+
+    /*
+     * Unknown frontend routes
+     * return to login.
+     */
+    {
+      path:
+        "*",
+
+      Component:
+        LoginPage,
+    },
+  ]);

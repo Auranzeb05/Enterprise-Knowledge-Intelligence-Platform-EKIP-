@@ -1,0 +1,49 @@
+/*
+ * EKIP login credential visibility.
+ *
+ * The login identifier intentionally uses autocomplete="username"
+ * even though EKIP usernames are email addresses. This is the standard
+ * password-manager pairing with autocomplete="current-password".
+ */
+
+#email,
+#password,
+input[name="username"],
+input[name="password"] {
+  color: #0f172a !important;
+  caret-color: #0f172a !important;
+  color-scheme: light;
+}
+
+#email:-webkit-autofill,
+#email:-webkit-autofill:hover,
+#email:-webkit-autofill:focus,
+#email:-webkit-autofill:active,
+#password:-webkit-autofill,
+#password:-webkit-autofill:hover,
+#password:-webkit-autofill:focus,
+#password:-webkit-autofill:active,
+input[name="username"]:-webkit-autofill,
+input[name="username"]:-webkit-autofill:hover,
+input[name="username"]:-webkit-autofill:focus,
+input[name="username"]:-webkit-autofill:active,
+input[name="password"]:-webkit-autofill,
+input[name="password"]:-webkit-autofill:hover,
+input[name="password"]:-webkit-autofill:focus,
+input[name="password"]:-webkit-autofill:active {
+  -webkit-text-fill-color: #0f172a !important;
+  caret-color: #0f172a !important;
+  -webkit-box-shadow: 0 0 0 1000px #ffffff inset !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+}
+
+#email:autofill,
+#password:autofill,
+input[name="username"]:autofill,
+input[name="password"]:autofill {
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+  box-shadow: 0 0 0 1000px #ffffff inset !important;
+}

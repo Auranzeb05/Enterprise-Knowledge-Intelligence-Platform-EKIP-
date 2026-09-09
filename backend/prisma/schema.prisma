@@ -1,0 +1,161 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  employee
+  manager
+  admin
+}
+
+enum UserStatus {
+  active
+  pending
+  suspended
+}
+
+enum DocumentStatus {
+  uploaded
+  processing
+  ready
+  failed
+}
+
+enum ChatMessageRole {
+  user
+  assistant
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  documents Document[]
+}
+
+model User {
+  id             String     @id @default(uuid())
+  supabaseUserId String     @unique
+  email          String     @unique
+  fullName       String
+  role           Role       @default(employee)
+  status         UserStatus @default(active)
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  managerId String?
+  manager   User?   @relation("ManagerEmployees", fields: [managerId], references: [id])
+  employees User[]  @relation("ManagerEmployees")
+
+  documents     Document[]
+  conversations ChatConversation[]
+  auditLogs      AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Document {
+  id          String         @id @default(uuid())
+  title       String
+  fileName    String
+  fileType    String
+  fileSize    Int
+  storagePath String
+  status      DocumentStatus @default(uploaded)
+
+  uploadedById String
+  uploadedBy   User   @relation(fields: [uploadedById], references: [id])
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  chunks DocumentChunk[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DocumentChunk {
+  id         String @id @default(uuid())
+  content    String
+  chunkIndex Int
+
+  embedding Unsupported("vector(768)")?
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([documentId, chunkIndex])
+  @@index([documentId])
+}
+
+model ChatConversation {
+  id    String  @id @default(uuid())
+  title String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  messages ChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ChatMessage {
+  id      String          @id @default(uuid())
+  role    ChatMessageRole
+  content String
+  sources Json?
+
+  conversationId String
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([conversationId])
+}
+
+
+model AuditLog {
+  id            String   @id @default(uuid())
+
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  actorEmail    String
+  actorName     String
+  actorRole     String
+
+  action        String
+  resourceType  String
+  resourceId    String?
+  resourceLabel String?
+  status        String   @default("success")
+
+  ipAddress     String?
+  userAgent     String?
+  requestId     String?
+  metadata      Json?
+
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([userId])
+  @@index([action])
+  @@index([resourceType])
+  @@index([status])
+}
