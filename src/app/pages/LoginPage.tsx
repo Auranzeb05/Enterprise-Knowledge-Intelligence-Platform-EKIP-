@@ -17,6 +17,8 @@ import {
   Loader2,
   Lock,
   ShieldCheck,
+  UserRound,
+  Users,
 } from "lucide-react";
 import {
   useAuth,
@@ -69,6 +71,37 @@ const ROLE_META: Record<
   },
 };
 
+const DEMO_MODE_ENABLED =
+  String(import.meta.env.VITE_DEMO_MODE || "")
+    .trim()
+    .toLowerCase() === "true";
+
+const DEMO_ROLES: Array<{
+  role: UserRole;
+  label: string;
+  description: string;
+  icon: typeof ShieldCheck;
+}> = [
+  {
+    role: "admin",
+    label: "Admin Demo",
+    description: "Organization-wide view",
+    icon: ShieldCheck,
+  },
+  {
+    role: "manager",
+    label: "Manager Demo",
+    description: "Department workspace",
+    icon: Users,
+  },
+  {
+    role: "employee",
+    label: "Employee Demo",
+    description: "Employee workspace",
+    icon: UserRound,
+  },
+];
+
 function validate(
   email: string,
   password: string
@@ -95,6 +128,7 @@ export default function LoginPage() {
 
   const {
     login,
+    demoLogin,
     logout,
     user,
     session,
@@ -126,6 +160,9 @@ export default function LoginPage() {
 
   const [serverErr, setServerErr] =
     useState("");
+
+  const [demoRole, setDemoRole] =
+    useState<UserRole | null>(null);
 
   const [
     authenticatedUser,
@@ -198,6 +235,7 @@ export default function LoginPage() {
 
     try {
       setStatus("loading");
+      setDemoRole(null);
       setServerErr("");
       setAuthenticatedUser(null);
 
@@ -223,12 +261,49 @@ export default function LoginPage() {
     }
   }
 
+  async function handleDemoLogin(
+    role: UserRole
+  ) {
+    if (status === "loading") return;
+
+    try {
+      setStatus("loading");
+      setDemoRole(role);
+      setServerErr("");
+      setAuthenticatedUser(null);
+      setTouched({
+        email: false,
+        password: false,
+      });
+
+      const ekipUser =
+        await demoLogin(role);
+
+      setAuthenticatedUser(ekipUser);
+      setPassword("");
+      setStatus("success");
+    } catch (error) {
+      setAuthenticatedUser(null);
+
+      setServerErr(
+        error instanceof Error
+          ? error.message
+          : "Demo access is currently unavailable."
+      );
+
+      setStatus("error");
+    } finally {
+      setDemoRole(null);
+    }
+  }
+
   async function handleExistingLogout() {
     await logout();
 
     setEmail("");
     setPassword("");
     setServerErr("");
+    setDemoRole(null);
     setAuthenticatedUser(null);
     setStatus("idle");
   }
@@ -650,6 +725,63 @@ export default function LoginPage() {
                 )}
               </button>
             </form>
+
+            {DEMO_MODE_ENABLED && (
+              <div className="mt-7">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-px flex-1 bg-slate-200" />
+                  <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                    Explore Demo
+                  </span>
+                  <div className="h-px flex-1 bg-slate-200" />
+                </div>
+
+                <p className="text-center text-xs leading-5 text-slate-500 mb-4">
+                  One-click, read-only access to preconfigured EKIP workspaces.
+                  No demo credentials are required.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {DEMO_ROLES.map((item) => {
+                    const Icon = item.icon;
+                    const isLoading =
+                      status === "loading" &&
+                      demoRole === item.role;
+
+                    return (
+                      <button
+                        key={item.role}
+                        type="button"
+                        disabled={status === "loading"}
+                        onClick={() =>
+                          void handleDemoLogin(item.role)
+                        }
+                        className="group rounded-xl border border-slate-200 bg-white px-3 py-3 text-left transition-all hover:border-blue-300 hover:bg-blue-50/50 hover:shadow-sm disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-100">
+                            {isLoading ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Icon className="w-4 h-4" />
+                            )}
+                          </div>
+
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-slate-800">
+                              {item.label}
+                            </p>
+                            <p className="mt-0.5 text-[10px] leading-4 text-slate-500">
+                              {item.description}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             <div
               className="mt-6 rounded-xl px-4 py-3.5 flex items-start gap-3"

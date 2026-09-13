@@ -31,6 +31,25 @@ function readOptionalString(
   return value || undefined;
 }
 
+function requireDemoString(
+  name: string,
+  enabled: boolean
+) {
+  const value =
+    readOptionalString(name);
+
+  if (
+    enabled &&
+    !value
+  ) {
+    throw new Error(
+      `Missing required demo environment variable: ${name}`
+    );
+  }
+
+  return value;
+}
+
 function readPositiveInteger(
   name: string,
   fallback: number
@@ -214,6 +233,12 @@ function readCorsOrigins(
 const NODE_ENV =
   readNodeEnvironment();
 
+const DEMO_MODE_ENABLED =
+  readBoolean(
+    "DEMO_MODE_ENABLED",
+    false
+  );
+
 export const env = {
   NODE_ENV,
 
@@ -293,6 +318,44 @@ export const env = {
     readPositiveInteger(
       "OLLAMA_CHAT_TIMEOUT_MS",
       120000
+    ),
+
+  DEMO_MODE_ENABLED,
+
+  DEMO_ADMIN_EMAIL:
+    requireDemoString(
+      "DEMO_ADMIN_EMAIL",
+      DEMO_MODE_ENABLED
+    ),
+
+  DEMO_ADMIN_PASSWORD:
+    requireDemoString(
+      "DEMO_ADMIN_PASSWORD",
+      DEMO_MODE_ENABLED
+    ),
+
+  DEMO_MANAGER_EMAIL:
+    requireDemoString(
+      "DEMO_MANAGER_EMAIL",
+      DEMO_MODE_ENABLED
+    ),
+
+  DEMO_MANAGER_PASSWORD:
+    requireDemoString(
+      "DEMO_MANAGER_PASSWORD",
+      DEMO_MODE_ENABLED
+    ),
+
+  DEMO_EMPLOYEE_EMAIL:
+    requireDemoString(
+      "DEMO_EMPLOYEE_EMAIL",
+      DEMO_MODE_ENABLED
+    ),
+
+  DEMO_EMPLOYEE_PASSWORD:
+    requireDemoString(
+      "DEMO_EMPLOYEE_PASSWORD",
+      DEMO_MODE_ENABLED
     ),
 
   CORS_ORIGINS:

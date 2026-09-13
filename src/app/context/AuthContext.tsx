@@ -28,6 +28,7 @@ type AuthContextType = {
   user: EkipUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<EkipUser>;
+  demoLogin: (role: UserRole) => Promise<EkipUser>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<EkipUser | null>;
   updateProfile: (fullName: string) => Promise<EkipUser>;
@@ -122,6 +123,79 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const ekipUser = await fetchCurrentUser(data.session.access_token);
       setSession(data.session);
       setUser(ekipUser);
+      return ekipUser;
+    } catch (error) {
+      await clearLocalAuth();
+      throw error;
+    }
+  }
+
+  async function demoLogin(role: UserRole): Promise<EkipUser> {
+    await clearLocalAuth();
+
+    const response = await fetch(`${API_URL}/api/demo/session`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ role }),
+    });
+
+    const data = await readJson(response);
+
+    if (!response.ok) {
+      throw new Error(
+        typeof data?.message === "string"
+          ? data.message
+          : "Demo access is currently unavailable."
+      );
+    }
+
+    const accessToken =
+      typeof data?.session?.accessToken === "string"
+        ? data.session.accessToken
+        : "";
+
+    const refreshToken =
+      typeof data?.session?.refreshToken === "string"
+        ? data.session.refreshToken
+        : "";
+
+    if (!accessToken || !refreshToken) {
+      throw new Error("Demo session response is invalid.");
+    }
+
+    const {
+      data: sessionData,
+      error: sessionError,
+    } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
+    });
+
+    if (sessionError || !sessionData.session) {
+      await clearLocalAuth();
+
+      throw new Error(
+        sessionError?.message ||
+          "Demo authentication did not return a valid session."
+      );
+    }
+
+    try {
+      const ekipUser = await fetchCurrentUser(
+        sessionData.session.access_token
+      );
+
+      if (ekipUser.role !== role) {
+        throw new Error(
+          "Demo account role does not match the requested workspace."
+        );
+      }
+
+      setSession(sessionData.session);
+      setUser(ekipUser);
+
       return ekipUser;
     } catch (error) {
       await clearLocalAuth();
@@ -278,6 +352,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         loading,
         login,
+        demoLogin,
         logout,
         refreshUser,
         updateProfile,

@@ -116,6 +116,44 @@ export async function getUserById(req: Request, res: Response) {
         });
       }
   
+      const normalizedDepartmentId =
+        role === "admin"
+          ? null
+          : departmentId || null;
+
+      const normalizedManagerId =
+        role === "employee"
+          ? managerId || null
+          : null;
+
+      if (normalizedManagerId) {
+        const manager = await prisma.user.findUnique({
+          where: { id: normalizedManagerId },
+          select: {
+            id: true,
+            role: true,
+            departmentId: true,
+          },
+        });
+
+        if (!manager || manager.role !== "manager") {
+          return res.status(400).json({
+            success: false,
+            message: "Selected reporting manager is not a valid manager",
+          });
+        }
+
+        if (
+          !normalizedDepartmentId ||
+          manager.departmentId !== normalizedDepartmentId
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "Reporting manager must belong to the employee's department",
+          });
+        }
+      }
+
       const existingUser = await prisma.user.findUnique({
         where: {
           email,
@@ -153,8 +191,8 @@ export async function getUserById(req: Request, res: Response) {
             fullName,
             role,
             status: "active",
-            departmentId: departmentId || null,
-            managerId: managerId || null,
+            departmentId: normalizedDepartmentId,
+            managerId: normalizedManagerId,
           },
           include: {
             department: true,
@@ -251,6 +289,51 @@ export async function getUserById(req: Request, res: Response) {
         });
       }
   
+      const effectiveRole =
+        role || existingUser.role;
+
+      const effectiveDepartmentId =
+        effectiveRole === "admin"
+          ? null
+          : departmentId !== undefined
+            ? departmentId || null
+            : existingUser.departmentId;
+
+      const effectiveManagerId =
+        effectiveRole === "employee"
+          ? managerId !== undefined
+            ? managerId || null
+            : existingUser.managerId
+          : null;
+
+      if (effectiveManagerId) {
+        const manager = await prisma.user.findUnique({
+          where: { id: effectiveManagerId },
+          select: {
+            id: true,
+            role: true,
+            departmentId: true,
+          },
+        });
+
+        if (!manager || manager.role !== "manager") {
+          return res.status(400).json({
+            success: false,
+            message: "Selected reporting manager is not a valid manager",
+          });
+        }
+
+        if (
+          !effectiveDepartmentId ||
+          manager.departmentId !== effectiveDepartmentId
+        ) {
+          return res.status(400).json({
+            success: false,
+            message: "Reporting manager must belong to the employee's department",
+          });
+        }
+      }
+
       const user = await prisma.user.update({
         where: {
           id,
@@ -268,12 +351,8 @@ export async function getUserById(req: Request, res: Response) {
             ? { status }
             : {}),
         
-          ...(departmentId !== undefined
-            ? { departmentId: departmentId || null }
-            : {}),
-            ...(managerId !== undefined
-              ? { managerId: managerId || null }
-              : {}),
+          departmentId: effectiveDepartmentId,
+          managerId: effectiveManagerId,
         },
         include: {
           department: true,

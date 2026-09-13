@@ -14,7 +14,9 @@
     "test:watch": "vitest",
     "verify:runtime": "node scripts/verify-production.mjs",
     "verify:phase7": "npm run build && npm test",
-    "prisma:generate": "prisma generate"
+    "prisma:generate": "prisma generate",
+    "demo:setup": "tsx src/setup-demo-users.ts",
+    "demo:cleanup": "tsx src/cleanup-demo-users.ts"
   },
   "keywords": [
     "ekip",

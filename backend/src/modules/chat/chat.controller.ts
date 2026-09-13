@@ -89,6 +89,15 @@ const INITIAL_CHUNKS_PER_DOCUMENT =
 const MAX_RETRIEVAL_QUERY_LENGTH =
   2500;
 
+const CHAT_TRANSACTION_MAX_WAIT_MS =
+  15000;
+
+const CHAT_TRANSACTION_TIMEOUT_MS =
+  15000;
+
+const CHAT_PERSISTENCE_RETRY_DELAY_MS =
+  750;
+
 /*
  * =========================================================
  * CUSTOM ERROR
@@ -102,6 +111,39 @@ class AIServiceError extends Error {
     this.name =
       "AIServiceError";
   }
+}
+
+function isTransactionStartTimeout(
+  error: unknown
+) {
+  if (
+    typeof error !== "object" ||
+    error === null
+  ) {
+    return false;
+  }
+
+  const candidate = error as {
+    code?: unknown;
+    message?: unknown;
+  };
+
+  return (
+    candidate.code === "P2028" &&
+    typeof candidate.message ===
+      "string" &&
+    candidate.message.includes(
+      "Unable to start a transaction"
+    )
+  );
+}
+
+async function wait(
+  milliseconds: number
+) {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, milliseconds);
+  });
 }
 
 /*
@@ -1420,83 +1462,117 @@ export async function chatWithKnowledge(
      * =====================================================
      */
 
-    const conversationId =
-      await prisma.$transaction(
-        async (tx) => {
-          let finalConversationId:
-            string;
+    const persistConversation =
+      async () =>
+        prisma.$transaction(
+          async (tx) => {
+            let finalConversationId:
+              string;
 
-          if (
-            existingConversation
-          ) {
-            finalConversationId =
-              existingConversation.id;
-          } else {
-            const newConversation =
-              await tx
-                .chatConversation
-                .create({
-                  data: {
-                    userId:
-                      currentUser.id,
+            if (
+              existingConversation
+            ) {
+              finalConversationId =
+                existingConversation.id;
+            } else {
+              const newConversation =
+                await tx
+                  .chatConversation
+                  .create({
+                    data: {
+                      userId:
+                        currentUser.id,
 
-                    title:
-                      buildConversationTitle(
-                        message
-                      ),
-                  },
-                });
+                      title:
+                        buildConversationTitle(
+                          message
+                        ),
+                    },
+                  });
 
-            finalConversationId =
-              newConversation.id;
-          }
+              finalConversationId =
+                newConversation.id;
+            }
 
-          await tx.chatMessage.create({
-            data: {
-              conversationId:
-                finalConversationId,
-
-              role:
-                "user",
-
-              content:
-                message,
-            },
-          });
-
-          await tx.chatMessage.create({
-            data: {
-              conversationId:
-                finalConversationId,
-
-              role:
-                "assistant",
-
-              content:
-                answer,
-
-              sources:
-                prismaSources,
-            },
-          });
-
-          await tx
-            .chatConversation
-            .update({
-              where: {
-                id:
-                  finalConversationId,
-              },
-
+            await tx.chatMessage.create({
               data: {
-                updatedAt:
-                  new Date(),
+                conversationId:
+                  finalConversationId,
+
+                role:
+                  "user",
+
+                content:
+                  message,
               },
             });
 
-          return finalConversationId;
-        }
+            await tx.chatMessage.create({
+              data: {
+                conversationId:
+                  finalConversationId,
+
+                role:
+                  "assistant",
+
+                content:
+                  answer,
+
+                sources:
+                  prismaSources,
+              },
+            });
+
+            await tx
+              .chatConversation
+              .update({
+                where: {
+                  id:
+                    finalConversationId,
+                },
+
+                data: {
+                  updatedAt:
+                    new Date(),
+                },
+              });
+
+            return finalConversationId;
+          },
+          {
+            maxWait:
+              CHAT_TRANSACTION_MAX_WAIT_MS,
+
+            timeout:
+              CHAT_TRANSACTION_TIMEOUT_MS,
+          }
+        );
+
+    let conversationId: string;
+
+    try {
+      conversationId =
+        await persistConversation();
+    } catch (error) {
+      if (
+        !isTransactionStartTimeout(
+          error
+        )
+      ) {
+        throw error;
+      }
+
+      console.warn(
+        "Chat persistence transaction could not start; retrying once."
       );
+
+      await wait(
+        CHAT_PERSISTENCE_RETRY_DELAY_MS
+      );
+
+      conversationId =
+        await persistConversation();
+    }
 
     /*
      * =====================================================
@@ -1536,7 +1612,7 @@ export async function chatWithKnowledge(
 
     return res.status(500).json({
       message:
-        "AI chat failed",
+        "The answer could not be saved. Please try again.",
     });
   }
 }

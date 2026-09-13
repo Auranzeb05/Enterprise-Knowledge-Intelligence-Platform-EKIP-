@@ -43,6 +43,7 @@ import employeeRoutes from "./modules/employee/employee.routes.js";
 import chatRoutes from "./modules/chat/chat.routes.js";
 import documentRoutes from "./modules/documents/document.routes.js";
 import searchRoutes from "./modules/search/search.routes.js";
+import demoRoutes from "./modules/demo/demo.routes.js";
 
 const app =
   express();
@@ -295,6 +296,11 @@ app.use(
 app.use(
   "/api",
   userRoutes
+);
+
+app.use(
+  "/api/demo",
+  demoRoutes
 );
 
 app.use(

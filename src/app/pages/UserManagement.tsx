@@ -710,9 +710,11 @@ export default function UserManagement() {
               ),
 
             department:
-              user.department
-                ?.name ||
-              "Unassigned",
+              user.role === "admin"
+                ? "Organization-wide"
+                : user.department
+                    ?.name ||
+                  "Unassigned",
 
             memberSince:
               formatDate(
@@ -1063,7 +1065,9 @@ export default function UserManagement() {
         ),
 
       departmentId:
-        form.departmentId || null,
+        form.role === "Admin"
+          ? null
+          : form.departmentId || null,
     }
   ),
           }
@@ -1209,12 +1213,14 @@ export default function UserManagement() {
                     ),
 
                   departmentId:
-                    editForm.departmentId ||
-                    null,
-                    managerId:
-  editForm.role === "Employee"
-    ? editForm.managerId || null
-    : null,
+                    editForm.role === "Admin"
+                      ? null
+                      : editForm.departmentId || null,
+
+                  managerId:
+                    editForm.role === "Employee"
+                      ? editForm.managerId || null
+                      : null,
                 }
               ),
           }
@@ -2376,7 +2382,6 @@ export default function UserManagement() {
                       )
                     }
                     className="w-full px-3 py-2.5 text-sm rounded-lg outline-none"
-                    placeholder="John Doe"
                     style={{
                       background:
                         "rgba(255,255,255,0.04)",
@@ -2442,7 +2447,6 @@ export default function UserManagement() {
                       )
                     }
                     className="w-full px-3 py-2.5 text-sm rounded-lg outline-none"
-                    placeholder="john@example.com"
                     style={{
                       background:
                         "rgba(255,255,255,0.04)",
@@ -2490,22 +2494,19 @@ export default function UserManagement() {
                     value={
                       form.role
                     }
-                    onChange={(
-                      event
-                    ) =>
-                      setForm(
-                        (
-                          current
-                        ) => ({
-                          ...current,
+                    onChange={(event) => {
+                      const nextRole =
+                        event.target.value as RoleLabel;
 
-                          role:
-                            event
-                              .target
-                              .value as RoleLabel,
-                        })
-                      )
-                    }
+                      setForm((current) => ({
+                        ...current,
+                        role: nextRole,
+                        departmentId:
+                          nextRole === "Admin"
+                            ? ""
+                            : current.departmentId,
+                      }));
+                    }}
                     className="w-full px-3 py-2.5 text-sm rounded-lg outline-none appearance-none"
                     style={{
                       background:
@@ -2549,37 +2550,45 @@ export default function UserManagement() {
                   Department
                 </label>
 
-                <select
-                  value={form.departmentId}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      departmentId: event.target.value,
-                    }))
-                  }
-                  className="w-full px-3 py-2.5 text-sm rounded-lg outline-none appearance-none"
-                  style={{
-                    background:
-                      "rgba(255,255,255,0.04)",
-                    border:
-                      "1px solid rgba(255,255,255,0.08)",
-                    color:
-                      "#E8EFF8",
-                  }}
-                >
-                  <option value="">
-                    Unassigned
-                  </option>
+                {form.role === "Admin" ? (
+                  <div
+                    className="w-full px-3 py-2.5 text-sm rounded-lg"
+                    style={{
+                      background: "rgba(255,255,255,0.025)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      color: "#9CA3AF",
+                    }}
+                  >
+                    Organization-wide
+                  </div>
+                ) : (
+                  <select
+                    value={form.departmentId}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        departmentId: event.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2.5 text-sm rounded-lg outline-none appearance-none"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "#E8EFF8",
+                    }}
+                  >
+                    <option value="">Unassigned</option>
 
-                  {departments.map((department) => (
-                    <option
-                      key={department.id}
-                      value={department.id}
-                    >
-                      {department.name}
-                    </option>
-                  ))}
-                </select>
+                    {departments.map((department) => (
+                      <option
+                        key={department.id}
+                        value={department.id}
+                      >
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
                 {/* Password */}
 
@@ -2621,7 +2630,6 @@ export default function UserManagement() {
                         )
                       }
                       className="w-full px-3 py-2.5 pr-20 text-sm rounded-lg outline-none"
-                      placeholder="Minimum 8 characters"
                       style={{
                         background:
                           "rgba(255,255,255,0.04)",
@@ -2986,22 +2994,23 @@ export default function UserManagement() {
                   value={
                     editForm.role
                   }
-                  onChange={(
-                    event
-                  ) =>
-                    setEditForm(
-                      (
-                        current
-                      ) => ({
-                        ...current,
+                  onChange={(event) => {
+                    const nextRole =
+                      event.target.value as RoleLabel;
 
-                        role:
-                          event
-                            .target
-                            .value as RoleLabel,
-                      })
-                    )
-                  }
+                    setEditForm((current) => ({
+                      ...current,
+                      role: nextRole,
+                      departmentId:
+                        nextRole === "Admin"
+                          ? ""
+                          : current.departmentId,
+                      managerId:
+                        nextRole === "Employee"
+                          ? current.managerId
+                          : "",
+                    }));
+                  }}
                   className="w-full px-3 py-2.5 text-sm rounded-lg outline-none appearance-none"
                   style={{
                     background:
@@ -3105,84 +3114,62 @@ export default function UserManagement() {
                 <label
                   className="text-[11px] font-semibold uppercase tracking-wider mb-1.5 block"
                   style={{
-                    color:
-                      "#3D5A78",
+                    color: "#3D5A78",
                   }}
                 >
                   Department
                 </label>
 
-                <select
-                  value={
-                    editForm.departmentId
-                  }
-                  onChange={(
-                    event
-                  ) =>
-                    setEditForm(
-                      (
-                        current
-                      ) => ({
-                        ...current,
-
-                        departmentId:
-                          event
-                            .target
-                            .value,
-                      })
-                    )
-                  }
-                  className="w-full px-3 py-2.5 text-sm rounded-lg outline-none appearance-none"
-                  style={{
-                    background:
-                      "rgba(255,255,255,0.04)",
-
-                    border:
-                      "1px solid rgba(255,255,255,0.08)",
-
-                    color:
-                      "#E8EFF8",
-                  }}
-                >
-                  <option value="">
-                    Unassigned
-                  </option>
-
-                  {departments.map(
-                    (
-                      department
-                    ) => (
-                      <option
-                        key={
-                          department.id
-                        }
-                        value={
-                          department.id
-                        }
-                      >
-                        {
-                          department.name
-                        }
-                      </option>
-                    )
-                  )}
-                </select>
-
-                {departments.length ===
-                  0 && (
-                  <p
-                    className="text-[10px] mt-1.5"
+                {editForm.role === "Admin" ? (
+                  <div
+                    className="w-full px-3 py-2.5 text-sm rounded-lg"
                     style={{
-                      color:
-                        "#6B7280",
+                      background: "rgba(255,255,255,0.025)",
+                      border: "1px solid rgba(255,255,255,0.06)",
+                      color: "#9CA3AF",
                     }}
                   >
-                    No
-                    departments
-                    have been
-                    created yet.
-                  </p>
+                    Organization-wide
+                  </div>
+                ) : (
+                  <select
+                    value={editForm.departmentId}
+                    onChange={(event) =>
+                      setEditForm((current) => ({
+                        ...current,
+                        departmentId: event.target.value,
+                        managerId: "",
+                      }))
+                    }
+                    className="w-full px-3 py-2.5 text-sm rounded-lg outline-none appearance-none"
+                    style={{
+                      background: "rgba(255,255,255,0.04)",
+                      border: "1px solid rgba(255,255,255,0.08)",
+                      color: "#E8EFF8",
+                    }}
+                  >
+                    <option value="">Unassigned</option>
+
+                    {departments.map((department) => (
+                      <option
+                        key={department.id}
+                        value={department.id}
+                      >
+                        {department.name}
+                      </option>
+                    ))}
+                  </select>
                 )}
+
+                {editForm.role !== "Admin" &&
+                  departments.length === 0 && (
+                    <p
+                      className="text-[10px] mt-1.5"
+                      style={{ color: "#6B7280" }}
+                    >
+                      No departments have been created yet.
+                    </p>
+                  )}
               </div>
               {/* Manager */}
 
@@ -3220,7 +3207,10 @@ export default function UserManagement() {
       {users
         .filter(
           (user) =>
-            user.role === "manager"
+            user.role === "manager" &&
+            Boolean(editForm.departmentId) &&
+            user.departmentId ===
+              editForm.departmentId
         )
         .map((manager) => (
           <option
