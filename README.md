@@ -12,7 +12,7 @@
 
 **Live Application:** [Open EKIP](https://ekip-sooty.vercel.app/)
 
-**AI / RAG Demo Video:** [Watch Demo](YOUR_DEMO_VIDEO_URL_HERE)
+**AI / RAG Demo Video:** [Watch Demo](https://drive.google.com/file/d/1YHSB40SPC-YmtG5FlUZf0U-7V9M47G9-/view?usp=sharing)
 
 > The public showcase can be configured with one-click demo access for Admin, Manager, and Employee roles. Full AI document ingestion and grounded RAG require an Ollama runtime reachable by the backend.
 
